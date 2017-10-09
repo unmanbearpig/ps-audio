@@ -17,6 +17,10 @@ import Audio.WebAudio.GainNode (gain)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Console as Console
 
+import Music.Intervals
+import Music.Pitch
+import Music.Note
+
 data Query a = ToggleState a
 
 type State = { on :: Boolean
@@ -62,8 +66,13 @@ component =
       newCtx <- H.liftEff AuCtx.makeAudioContext
       newOsc <- H.liftEff $ AuCtx.createOscillator newCtx
 
+
       g <- H.liftEff $ AuCtx.createGain newCtx
       H.liftEff $ AuParam.setValue 1.0 =<< gain g
+
+      freqParam <- H.liftEff $ AuOsc.frequency newOsc
+      H.liftEff $ AuParam.setValue ( pitchFreq $ toHz (Note (Octaves 3) A Sharp)) freqParam
+
 
       H.liftEff $ AuCtx.connect newOsc g
       H.liftEff $ AuCtx.connect g =<< AuCtx.destination newCtx

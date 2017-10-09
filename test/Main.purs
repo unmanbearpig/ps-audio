@@ -9,6 +9,8 @@ import Test.Unit.Main (runTest)
 import Test.Unit.Assert as Assert
 
 import Music
+import Music.Intervals
+import Music.Note
 
 main = runTest do
   suite "music" do
@@ -27,7 +29,7 @@ main = runTest do
       Assert.equal (MidiNote 127) (midiNote (OctaveNote (Octave 9) G))
 
     test "note pitch" do
-      Assert.equal (Hz 440.0) (notePitch (OctaveNote (Octave 4) (Note A Natural)))
+      Assert.equal (Hz 440.0) (notePitch (OctaveNote (Octave 4) A))
       Assert.equal (Hz 880.0) (notePitch (OctaveNote (Octave 5) (Note A Natural)))
       Assert.equal (Hz 220.0) (notePitch (OctaveNote (Octave 3) (Note A Natural)))
       Assert.equal (Hz 110.0) (notePitch (OctaveNote (Octave 2) (Note A Natural)))
@@ -44,3 +46,8 @@ main = runTest do
       Assert.equal "Do♭" (show $ Note Do Flat)
       Assert.equal "Do♯" (show $ Note Do Sharp)
       Assert.equal "Do♮" (show $ Note Do Natural)
+
+    -- test "midi note absolute" do
+    --   let n1 = (OctaveNote (Octave 3) (noteIndex A))
+
+    --   Assert.equal n1 (octaveIndexNote $ midiNote n1)
