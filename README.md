@@ -1,6 +1,8 @@
-# purescript-halogen-template
+# ps-audio
 
-This is a template for starting a fresh project using the [purescript-halogen](https://github.com/slamdata/purescript-halogen) library for declarative user interfaces.
+Playing with WebAudio in PureScript, we'll see what I come up with.
+
+I'm using a [purescript-halogen](https://github.com/slamdata/purescript-halogen) [template](https://github.com/slamdata/purescript-halogen-template) and [adkelley's fork](https://github.com/adkelley/purescript-webaudio) of [purescript-webaudio](https://github.com/waterson/purescript-webaudio).
 
 ## Prerequisites
 
