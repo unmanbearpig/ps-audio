@@ -16,12 +16,12 @@ instance showAccidental :: Show Accidental where
     Flat -> "♭"
     Sharp -> "♯"
 
-data Pitch = Pitch Number -- in hertz
+data Pitch = Hz Number
 derive instance eqPitch :: Eq Pitch
 
 instance showPitch :: Show Pitch where
   show :: Pitch -> String
-  show (Pitch hz) = (show hz) <> "hz"
+  show (Hz hz) = (show hz) <> "hz"
 
 data LetterNote = C | D | E | F | G | A | B
 data SolfegeNote = Do | Re | Mi | Fa | Sol | La | Si
@@ -119,7 +119,7 @@ data OctaveNote n = OctaveNote Octave n
 
 
 a440 :: Pitch
-a440 = Pitch 440.0
+a440 = Hz 440.0
 
 data MidiNote = MidiNote Int
 derive instance eqMidiNote :: Eq MidiNote
@@ -134,7 +134,7 @@ midiNote (OctaveNote octave note) = MidiNote $ (octIndex + 1) * 12 + nIndex
     (Octave octIndex) = octave
 
 notePitch' :: forall n. (NoteName n) => Pitch -> OctaveNote n -> Pitch
-notePitch' (Pitch p) note = Pitch $ p * (2.0 `pow` (((toNumber m) - 69.0) / 12.0))
+notePitch' (Hz p) note = Hz $ p * (2.0 `pow` (((toNumber m) - 69.0) / 12.0))
   where
     (MidiNote m) = midiNote note
 

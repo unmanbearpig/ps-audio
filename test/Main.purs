@@ -27,15 +27,15 @@ main = runTest do
       Assert.equal (MidiNote 127) (midiNote (OctaveNote (Octave 9) G))
 
     test "note pitch" do
-      Assert.equal (Pitch 440.0) (notePitch (OctaveNote (Octave 4) (Note A Natural)))
-      Assert.equal (Pitch 880.0) (notePitch (OctaveNote (Octave 5) (Note A Natural)))
-      Assert.equal (Pitch 220.0) (notePitch (OctaveNote (Octave 3) (Note A Natural)))
-      Assert.equal (Pitch 110.0) (notePitch (OctaveNote (Octave 2) (Note A Natural)))
-      Assert.equal (Pitch  55.0) (notePitch (OctaveNote (Octave 1) (Note A Natural)))
-      Assert.equal (Pitch  27.5) (notePitch (OctaveNote (Octave 0) (Note A Natural)))
-      Assert.equal (Pitch  13.75) (notePitch (OctaveNote (Octave (-1)) (Note A Natural)))
+      Assert.equal (Hz 440.0) (notePitch (OctaveNote (Octave 4) (Note A Natural)))
+      Assert.equal (Hz 880.0) (notePitch (OctaveNote (Octave 5) (Note A Natural)))
+      Assert.equal (Hz 220.0) (notePitch (OctaveNote (Octave 3) (Note A Natural)))
+      Assert.equal (Hz 110.0) (notePitch (OctaveNote (Octave 2) (Note A Natural)))
+      Assert.equal (Hz  55.0) (notePitch (OctaveNote (Octave 1) (Note A Natural)))
+      Assert.equal (Hz  27.5) (notePitch (OctaveNote (Octave 0) (Note A Natural)))
+      Assert.equal (Hz  13.75) (notePitch (OctaveNote (Octave (-1)) (Note A Natural)))
       -- doesn't match exactly, not sure if correct
-      -- Assert.equal (Pitch  14.568) (notePitch (OctaveNote (Octave (-1)) (Note A Sharp)))
+      -- Assert.equal (Hz  14.568) (notePitch (OctaveNote (Octave (-1)) (Note A Sharp)))
 
     test "showNote" do
       Assert.equal "C♭" (show $ Note C Flat)
