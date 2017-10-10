@@ -37,9 +37,8 @@ instance monoidOctaves :: Monoid Octaves where
 instance semigroupOctaves :: Semigroup Octaves where
   append = over2 Octaves (+)
 
-
 instance showOctaves :: Show Octaves where
-  show (Octaves octs) = "(" <> (show octs) <> " octaves)"
+  show (Octaves octs) = "(Octave " <> (show octs) <> ")"
 
 instance octaveInterval :: Interval Octaves where
   toSemitones (Octaves octs) = Semitones $ octs * 12

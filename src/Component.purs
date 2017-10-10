@@ -2,8 +2,9 @@ module Component where
 
 import Prelude
 
+import Control.Monad.Eff (Eff)
 import Control.Monad.Aff (Aff)
-import Data.Maybe (Maybe(..))
+import Data.Maybe -- (Maybe(..))
 
 import Halogen as H
 import Halogen.HTML as HH
@@ -20,12 +21,13 @@ import Control.Monad.Eff.Console as Console
 import Music.Intervals
 import Music.Pitch
 import Music.Note
+import Synths
 
 data Query a = ToggleState a
 
 type State = { on :: Boolean
              , ctx :: Maybe AudioContext
-             , osc :: Maybe OscillatorNode }
+             , synth :: Maybe PolySynth }
 
 component :: forall eff. H.Component HH.HTML Query Unit Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
 component =
@@ -40,7 +42,7 @@ component =
   initialState :: State
   initialState = { on: false
                  , ctx: Nothing
-                 , osc: Nothing }
+                 , synth: Nothing }
 
   render :: State -> H.ComponentHTML Query
   render state =
@@ -58,30 +60,34 @@ component =
           ]
       ]
 
+  initCtx :: ∀ eff. Maybe AudioContext -> (Eff ( wau :: WebAudio | eff) AudioContext)
+  initCtx (Just ctx) = pure ctx
+  initCtx (Nothing) = AuCtx.makeAudioContext
+
+  init :: ∀ eff a. (Eff (wau :: WebAudio | eff) a) -> Maybe a -> (Eff ( wau :: WebAudio | eff) a)
+  init a Nothing = a
+  init _ (Just a) = pure a
+
   eval :: Query ~> H.ComponentDSL State Query Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
   eval = case _ of
     ToggleState next -> do
-      H.liftEff $ Console.log "starting doing something"
+      ctx <- H.liftEff <<< init AuCtx.makeAudioContext =<< H.gets (_.ctx)
 
-      newCtx <- H.liftEff AuCtx.makeAudioContext
-      newOsc <- H.liftEff $ AuCtx.createOscillator newCtx
+      let note = (Note (Octaves 3) A Sharp)
+      H.liftEff $ Console.log $ "note is " <> (show note)
 
+      let
+          notes :: Array Note
+          notes = [ (Note (Octaves 3) A Natural )
+                  , (Note (Octaves 4) C Natural)
+                  , (Note (Octaves 5) G Flat) ]
+      synth <- H.liftEff <<< init (polySynth ctx notes 1.0) =<< H.gets (_.synth)
+      dest <- H.liftEff $ AuCtx.destination ctx
+      H.liftEff $ synth `plugInto` dest
 
-      g <- H.liftEff $ AuCtx.createGain newCtx
-      H.liftEff $ AuParam.setValue 1.0 =<< gain g
-
-      freqParam <- H.liftEff $ AuOsc.frequency newOsc
-      H.liftEff $ AuParam.setValue ( pitchFreq $ toHz (Note (Octaves 3) A Sharp)) freqParam
-
-
-      H.liftEff $ AuCtx.connect newOsc g
-      H.liftEff $ AuCtx.connect g =<< AuCtx.destination newCtx
-
-      H.liftEff $ Console.log "starting playing"
-      H.liftEff $ AuOsc.startOscillator 0.0 newOsc
-      H.liftEff $ Console.log "started playing"
+      H.liftEff <<< (if _ then stop synth else play synth) =<< H.gets (_.on)
 
       H.modify (\state -> { on: not state.on
-                          , ctx: Just newCtx
-                          , osc: Just newOsc })
+                          , ctx: Just ctx
+                          , synth: Just synth })
       pure next

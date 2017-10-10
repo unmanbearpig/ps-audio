@@ -1,8 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "build": "pulp build -I src/Music --to dist/app.js",
-    "watch": "pulp -w build -I src/Music --to dist/app.js",
+    "build": "pulp build --to dist/app.js",
+    "watch": "pulp -w build --to dist/app.js",
     "watch-fast": "webpack --entry ./entry.js --output-filename dist/app.js --progress --watch"
   },
   "devDependencies": {
