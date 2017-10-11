@@ -25,20 +25,20 @@ main = runTest do
     --   Assert.equal (noteIndex B) (noteIndex Si)
 
     test "octaveNote" do
-      Assert.equal (MidiNote 0) (noteToMidi (Note (Octaves (-1)) C Natural))
-      Assert.equal (MidiNote 100) (noteToMidi (Note (Octaves 7) E Natural))
-      Assert.equal (MidiNote 127) (noteToMidi (Note (Octaves 9) G Natural))
+      Assert.equal (MidiNote 0) (noteToMidi (Note (Octave (-1)) C Natural))
+      Assert.equal (MidiNote 100) (noteToMidi (Note (Octave 7) E Natural))
+      Assert.equal (MidiNote 127) (noteToMidi (Note (Octave 9) G Natural))
 
     test "note pitch" do
-      Assert.equal (Hz 440.0) (toHz (Note (Octaves 4) A Natural))
-      Assert.equal (Hz 880.0) (toHz (Note (Octaves 5) A Natural))
-      Assert.equal (Hz 220.0) (toHz (Note (Octaves 3) A Natural))
-      Assert.equal (Hz 110.0) (toHz (Note (Octaves 2) A Natural))
-      Assert.equal (Hz  55.0) (toHz (Note (Octaves 1) A Natural))
-      Assert.equal (Hz  27.5) (toHz (Note (Octaves 0) A Natural))
-      Assert.equal (Hz  13.75) (toHz (Note (Octaves (-1)) A Natural))
+      Assert.equal (Hz 440.0) (toHz (Note (Octave 4) A Natural))
+      Assert.equal (Hz 880.0) (toHz (Note (Octave 5) A Natural))
+      Assert.equal (Hz 220.0) (toHz (Note (Octave 3) A Natural))
+      Assert.equal (Hz 110.0) (toHz (Note (Octave 2) A Natural))
+      Assert.equal (Hz  55.0) (toHz (Note (Octave 1) A Natural))
+      Assert.equal (Hz  27.5) (toHz (Note (Octave 0) A Natural))
+      Assert.equal (Hz  13.75) (toHz (Note (Octave (-1)) A Natural))
       -- doesn't match exactly, not sure if correct
-      -- Assert.equal (Hz  14.568) (toHz (Note (Octaves (-1)) (Note A Sharp)))
+      -- Assert.equal (Hz  14.568) (toHz (Note (Octave (-1)) (Note A Sharp)))
 
     -- test "showNote" do
     --   Assert.equal "C♭" (show $ Note C Flat)
@@ -49,6 +49,6 @@ main = runTest do
       -- Assert.equal "Do♮" (show $ Note Do Natural)
 
     -- test "midi note absolute" do
-    --   let n1 = (Note (Octaves 3) (noteIndex A))
+    --   let n1 = (Note (Octave 3) (noteIndex A))
 
     --   Assert.equal n1 (octaveIndexNote $ noteToMidi n1)

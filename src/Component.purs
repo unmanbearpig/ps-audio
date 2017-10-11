@@ -73,14 +73,14 @@ component =
     ToggleState next -> do
       ctx <- H.liftEff <<< init AuCtx.makeAudioContext =<< H.gets (_.ctx)
 
-      let note = (Note (Octaves 3) A Sharp)
+      let note = (Note (Octave 3) A Sharp)
       H.liftEff $ Console.log $ "note is " <> (show note)
 
       let
           notes :: Array Note
-          notes = [ (Note (Octaves 3) A Natural )
-                  , (Note (Octaves 4) C Natural)
-                  , (Note (Octaves 5) G Flat) ]
+          notes = [ (Note (Octave 3) A Natural )
+                  , (Note (Octave 4) C Natural)
+                  , (Note (Octave 5) G Flat) ]
       synth <- H.liftEff <<< init (polySynth ctx notes 1.0) =<< H.gets (_.synth)
       dest <- H.liftEff $ AuCtx.destination ctx
       H.liftEff $ synth `plugInto` dest

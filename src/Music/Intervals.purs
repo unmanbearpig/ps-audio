@@ -1,6 +1,8 @@
 module Music.Intervals where
 
 import Prelude
+import Music.Pitch
+import Music.MidiNote
 import Data.Newtype (class Newtype, over2, wrap)
 import Data.Monoid (class Monoid)
 
@@ -25,23 +27,27 @@ class (Eq i, Show i) <= Interval i where
 instance semitoneInterval :: Interval Semitones where
   toSemitones = id
 
-newtype Octaves = Octaves Int
+newtype Octave = Octave Int
 
-derive instance newtypeOctaves :: Newtype Octaves _
-derive newtype instance eqOctaves :: Eq Octaves
-derive newtype instance ordOctaves :: Ord Octaves
+derive instance newtypeOctave :: Newtype Octave _
+derive newtype instance eqOctave :: Eq Octave
+derive newtype instance ordOctave :: Ord Octave
 
-instance monoidOctaves :: Monoid Octaves where
+instance monoidOctave :: Monoid Octave where
   mempty = wrap 0
 
-instance semigroupOctaves :: Semigroup Octaves where
-  append = over2 Octaves (+)
+instance semigroupOctave :: Semigroup Octave where
+  append = over2 Octave (+)
 
-instance showOctaves :: Show Octaves where
-  show (Octaves octs) = "(Octave " <> (show octs) <> ")"
+instance showOctave :: Show Octave where
+  show (Octave octs) = "(Octave " <> (show octs) <> ")"
 
-instance octaveInterval :: Interval Octaves where
-  toSemitones (Octaves octs) = Semitones $ octs * 12
+instance octaveInterval :: Interval Octave where
+  toSemitones (Octave octs) = Semitones $ octs * 12
+
+instance octavePitch :: Pitch Octave where
+  toHz (Octave oid) = toHz $ MidiNote ((oid + 1) * octSemitones)
+    where octSemitones = 12
 
 unison = Semitones 0
 perfectUnison = Semitones 0

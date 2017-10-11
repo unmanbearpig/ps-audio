@@ -24,3 +24,6 @@ instance hzShow :: Show Hz where
 
 class Pitch a where
   toHz :: a -> Hz
+
+a440 :: Hz
+a440 = Hz 440.0
