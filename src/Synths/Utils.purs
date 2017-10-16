@@ -1,4 +1,4 @@
-module Synths.Utils ( module Music.Note
+module Synths.Utils ( module Music.Notes
                     , module Music.Pitch
                     , module Audio.WebAudio.Types
                     , class Player
@@ -20,7 +20,7 @@ import Audio.WebAudio.Oscillator as AuOsc
 import Audio.WebAudio.AudioParam as AuParam
 import Audio.WebAudio.Types (WebAudio, AudioContext, OscillatorNode, GainNode, class AudioNode)
 import Audio.WebAudio.GainNode (gain)
-import Music.Note
+import Music.Notes
 import Music.Pitch
 
 type GainValue = Number
@@ -46,7 +46,7 @@ noteOsc :: ∀ eff. AudioContext -> Note → (Eff ( wau ∷ WebAudio | eff ) Osc
 noteOsc ctx note = do
   osc <- AuCtx.createOscillator ctx
   freqParam <- AuOsc.frequency osc
-  AuParam.setValue (pitchFreq $ toHz $ noteToMidi note) freqParam
+  AuParam.setValue (pitchFreq $ toHz note) freqParam
   pure osc
 
 startOsc :: ∀ eff. OscillatorNode -> (Eff ( wau :: WebAudio | eff) Unit)

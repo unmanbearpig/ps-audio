@@ -17,10 +17,13 @@ import Audio.WebAudio.Oscillator as AuOsc
 import Audio.WebAudio.GainNode (gain)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Console as Console
+import Data.Traversable
 
-import Music.Intervals
+-- import Music.Intervals
 import Music.Pitch
-import Music.Note
+import Music.Notes
+import Music.SetTheory
+import Music.LetterNotation
 import Synths
 
 data Query a = ToggleState a
@@ -71,16 +74,17 @@ component =
   eval :: Query ~> H.ComponentDSL State Query Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
   eval = case _ of
     ToggleState next -> do
+      H.liftEff $ Console.log "making audio context"
       ctx <- H.liftEff <<< init AuCtx.makeAudioContext =<< H.gets (_.ctx)
-
-      let note = (Note (Octave 3) A Sharp)
-      H.liftEff $ Console.log $ "note is " <> (show note)
 
       let
           notes :: Array Note
-          notes = [ (Note (Octave 3) A Natural )
-                  , (Note (Octave 4) C Natural)
-                  , (Note (Octave 5) G Flat) ]
+          notes = [ (makeNote (Octave 3) A Natural)
+                  , (makeNote (Octave 4) C Natural)
+                  , (makeNote (Octave 5) G Flat) ]
+
+      H.liftEff $ traverse_ (Console.log <<< show) notes
+
       synth <- H.liftEff <<< init (polySynth ctx notes 1.0) =<< H.gets (_.synth)
       dest <- H.liftEff $ AuCtx.destination ctx
       H.liftEff $ synth `plugInto` dest

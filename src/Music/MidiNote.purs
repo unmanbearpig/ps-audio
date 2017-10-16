@@ -1,10 +1,11 @@
 module Music.MidiNote where
 
 import Prelude
-import Data.Newtype (class Newtype)
-import Music.Pitch (class Pitch, Hz(..), a440)
-import Math (pow)
+
 import Data.Int (toNumber)
+import Data.Newtype (class Newtype)
+import Math (pow)
+import Music.Pitch (class Pitch, Hz(..), a440)
 
 newtype MidiNote = MidiNote Int
 
@@ -19,3 +20,15 @@ midiNotePitch' (Hz p) (MidiNote midiNote) = Hz $ p * (2.0 `pow` (((toNumber midi
 
 instance midiNoteShow :: Show MidiNote where
   show (MidiNote m) = "MIDI=" <> (show m)
+
+class ToMidiNote a where
+  toMidiNote :: a -> MidiNote
+
+instance midiNoteToMidiNote :: ToMidiNote MidiNote where
+  toMidiNote = id
+
+transposeMidiNote :: MidiNote -> Int -> MidiNote
+transposeMidiNote (MidiNote mn) semitones = MidiNote $ mn + semitones
+
+toPitch :: ∀ a. ToMidiNote a => a -> Hz
+toPitch = midiNotePitch' a440 <<< toMidiNote

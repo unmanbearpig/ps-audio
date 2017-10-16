@@ -9,9 +9,9 @@ import Test.Unit.Main (runTest)
 import Test.Unit.Assert as Assert
 
 import Music
-import Music.Intervals
-import Music.Note
+import Music.MidiNote
 import Music.Pitch
+import Music.LetterNotation
 
 main = runTest do
   suite "music" do
@@ -25,9 +25,9 @@ main = runTest do
     --   Assert.equal (noteIndex B) (noteIndex Si)
 
     test "octaveNote" do
-      Assert.equal (MidiNote 0) (noteToMidi (Note (Octave (-1)) C Natural))
-      Assert.equal (MidiNote 100) (noteToMidi (Note (Octave 7) E Natural))
-      Assert.equal (MidiNote 127) (noteToMidi (Note (Octave 9) G Natural))
+      Assert.equal (MidiNote 0) (toMidiNote (Note ((-1)) C Natural))
+      Assert.equal (MidiNote 100) (toMidiNote (Note (7) E Natural))
+      Assert.equal (MidiNote 127) (toMidiNote (Note (9) G Natural))
 
     test "note pitch" do
       Assert.equal (Hz 440.0) (toHz (Note (Octave 4) A Natural))
