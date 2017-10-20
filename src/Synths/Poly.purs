@@ -9,7 +9,7 @@ import Audio.WebAudio.GainNode
 import Audio.WebAudio.AudioParam as AuParam
 import Control.Monad.Eff (Eff)
 import Data.Traversable (traverse, traverse_)
-import Data.Newtype
+import Data.Newtype (class Newtype)
 
 newtype PolySynth = PolySynth { notes :: (Array Note)
                               , oscs :: (Array OscillatorNode)
@@ -21,8 +21,6 @@ polySynth :: ∀ eff. AudioContext -> (Array Note) -> GainValue -> (Eff ( wau ::
 polySynth ctx notes gainValue = do
   oscs <- traverse (noteOsc ctx) notes
   g <- createGain ctx gainValue
-  -- t <- AuCtx.currentTime ctx
-  -- _ <- linearRampToValueAtTime gainValue (t + 0.01) =<< gain g
   traverse_ (\osc -> AuCtx.connect osc g) oscs
   pure $ PolySynth { notes: notes
                    , oscs: oscs

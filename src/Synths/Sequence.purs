@@ -27,12 +27,15 @@ playSequence ctx dest duration chords = do
       synthGain <- gain ((unwrap synth).gainNode)
       synth `plugInto` g
 
+      t <- AuCtx.currentTime ctx
+
+      let startTime = t + (toNumber idx) * duration
+          endTime = (startTime + duration)
+          fadeDuration = (duration * 0.01)
+
       play synth startTime
       _ <- AuParam.linearRampToValueAtTime 0.0 (startTime) synthGain
       _ <- AuParam.linearRampToValueAtTime 1.0 (startTime + fadeDuration) synthGain
       _ <- AuParam.linearRampToValueAtTime 1.0 (endTime) synthGain
       _ <- AuParam.linearRampToValueAtTime 0.0 (endTime + duration) synthGain
       stop synth (endTime + duration)
-        where startTime = (toNumber idx) * duration
-              endTime = (startTime + duration)
-              fadeDuration = (duration * 0.01)

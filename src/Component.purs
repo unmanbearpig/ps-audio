@@ -1,41 +1,65 @@
 module Component where
 
-import Control.Monad
-import Data.Int
 import Data.List.Lazy
-import Data.Maybe
-import Data.Traversable
+import Data.Monoid
 import Data.Tuple
 import Music.Chords
 import Music.LetterNotation
 import Music.Notes
-import Music.Pitch
 import Music.SetTheory
 import Prelude
 import Synths
+import Synths.Sequence
 import WebAudio.DynamicsCompressorNode
-import Data.Newtype
+
 import Audio.WebAudio.AudioContext as AuCtx
 import Audio.WebAudio.AudioParam as AuParam
-import Audio.WebAudio.GainNode (gain)
-import Audio.WebAudio.Oscillator as AuOsc
-import Audio.WebAudio.Types (WebAudio, AudioContext, OscillatorNode, DestinationNode)
-import Audio.WebAudio.Utils
 import Control.Monad.Aff (Aff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
-import Control.Monad.Eff.Console as Console
+import Data.Maybe (Maybe(..), fromMaybe)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
-import Data.Monoid
-import Synths.Sequence
 
-data Query a = ToggleState a
+data Query a = Play a | ChangeChordQuality String a | ChangePitchClass String a
 
-type State = { on :: Boolean
-             , ctx :: Maybe AudioContext
-             , synth :: Maybe PolySynth }
+type State = { ctx :: Maybe AudioContext
+             , dest :: Maybe DynamicsCompressorNode
+             , chordQuality :: ChordQuality
+             , chordPitchClass :: PitchClassDescription
+             , octave :: Octave}
+
+notes :: Array String
+notes = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "B" ]
+
+parseNote :: String -> Maybe PitchClassDescription
+parseNote = case _ of
+  "C" -> Just (Tuple C Natural)
+  "C#" -> Just (Tuple C Sharp)
+  "D" -> Just (Tuple D Natural)
+  "D#" -> Just (Tuple D Natural)
+  "E" -> Just (Tuple E Natural)
+  "F" -> Just (Tuple F Natural)
+  "F#" -> Just (Tuple F Natural)
+  "G" -> Just (Tuple G Natural)
+  "G#" -> Just (Tuple G Natural)
+  "A" -> Just (Tuple A Natural)
+  "A#" -> Just (Tuple A Sharp)
+  "B" -> Just (Tuple B Natural)
+  _ -> Nothing
+
+chordQualities :: Array String
+chordQualities = [ "Major", "Minor", "Augmented", "Diminished" ]
+
+parseChordQuality :: String -> Maybe ChordQuality
+parseChordQuality = case _ of
+  "Major" -> Just Major
+  "Minor" -> Just Minor
+  "Augmented" -> Just Augmented
+  "Diminished" -> Just Diminished
+  _ -> Nothing
+
 
 component :: forall eff. H.Component HH.HTML Query Unit Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
 component =
@@ -48,9 +72,11 @@ component =
   where
 
   initialState :: State
-  initialState = { on: false
-                 , ctx: Nothing
-                 , synth: Nothing }
+  initialState = { ctx: Nothing
+                 , dest: Nothing
+                 , chordQuality: Major
+                 , chordPitchClass: (Tuple C Natural)
+                 , octave: (Octave 4) }
 
   render :: State -> H.ComponentHTML Query
   render state =
@@ -59,12 +85,13 @@ component =
           [ HH.text "Hello world!" ]
       , HH.p_
           [ HH.text "Why not toggle this button:" ]
+      , HH.select [ ]
+        (map (\noteName -> HH.option [ ] [ HH.text noteName ]) notes)
+      , HH.select [ HE.onValueChange (HE.input ChangeChordQuality) ]
+        (map (\cqName -> HH.option [ ] [ HH.text cqName ]) chordQualities)
       , HH.button
-          [ HE.onClick (HE.input_ ToggleState) ]
-          [ HH.text
-              if not state.on
-              then "Play"
-              else "Stop"
+          [ HE.onClick (HE.input_ Play) ]
+          [ HH.text  "Play"
           ]
       ]
 
@@ -77,43 +104,36 @@ component =
   init _ (Just a) = pure a
 
 
+  initSink :: forall eff. AudioContext -> (Eff ( wau :: WebAudio, console :: CONSOLE | eff) DynamicsCompressorNode)
+  initSink ctx = do
+    dest <- AuCtx.destination ctx
+    compressor <- createDynamicsCompressor ctx
+    AuParam.setValue 1.0 =<< threshold compressor
+    AuParam.setValue 30.0 =<< ratio compressor
+    AuCtx.connect compressor dest
+    pure compressor
+
   eval :: Query ~> H.ComponentDSL State Query Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
   eval = case _ of
-    ToggleState next -> do
-      H.liftEff $ Console.log "making audio context"
+    ChangePitchClass str next -> do
+      pc <- H.gets (_.chordPitchClass)
+      H.modify (\state -> state { chordPitchClass = (fromMaybe state.chordPitchClass (parseNote str)) })
+      pure next
+
+    ChangeChordQuality str next -> do
+      cq <- H.gets (_.chordQuality)
+      H.modify (\state -> state { chordQuality = (fromMaybe state.chordQuality (parseChordQuality str)) })
+      pure next
+
+    Play next -> do
       ctx <- H.liftEff <<< init AuCtx.makeAudioContext =<< H.gets (_.ctx)
+      dest <- H.liftEff <<< init (initSink ctx) =<< H.gets (_.dest)
 
-      let
-          chords :: List Chord
-          chords = (\blah -> blah (Octave 4)) <$>
-                      ((makeTriad Major C Natural)
-                       : (makeTriad Augmented C Natural)
-                       : (makeTriad Minor A Natural)
-                       : (makeTriad Diminished G Natural)
-                       : mempty)
-          chords2 :: List Chord
-          chords2 = (\blah -> blah (Octave 4)) <$>
-                     ((makeTriad Minor C Sharp)
-                       : (makeTriad Minor A Natural)
-                       : (makeTriad Minor B Natural)
-                       : (makeTriad Major G Natural)
-                       : mempty)
+      pc <- H.gets (_.chordPitchClass)
+      cq <- H.gets (_.chordQuality)
 
+      H.liftEff $ playSequence ctx dest 2.0 $ singleton $ makeTriad' cq pc (Octave 4)
 
-      dest <- H.liftEff $ AuCtx.destination ctx
-
-      compressor <- H.liftEff $ createDynamicsCompressor ctx
-
-      H.liftEff $ AuCtx.connect compressor dest
-
-      H.liftEff $ AuParam.setValue 1.0 =<< threshold compressor
-      H.liftEff $ AuParam.setValue 30.0 =<< ratio compressor
-
-      H.liftEff $ playSequence ctx compressor 0.20 (take 100 $ cycle chords)
-      H.liftEff $ playSequence ctx compressor 0.25 (take 100 $ cycle chords2)
-
-
-      H.modify (\state -> { on: not state.on
-                          , ctx: Just ctx
-                          , synth: Nothing })
+      H.modify (\state -> state { ctx = Just ctx
+                                , dest = Just dest })
       pure next

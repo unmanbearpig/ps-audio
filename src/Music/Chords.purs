@@ -35,6 +35,13 @@ intervalName name = intervalClass (case name of
 -- also dominant
 data ChordQuality = Major | Minor | Augmented | Diminished
 
+instance showChordQuality :: Show ChordQuality where
+  show = case _ of
+    Major -> "Major"
+    Minor -> "Minor"
+    Augmented -> "Augmented"
+    Diminished -> "Dimineshed"
+
 makeTriad' :: ChordQuality -> PitchClassDescription -> Octave -> Chord
 makeTriad' cq pcd oct = Chord oct root intervals
   where root = pitchClass'' pcd
