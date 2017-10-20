@@ -10,14 +10,19 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 
-import Audio.WebAudio.Types (WebAudio, AudioContext, OscillatorNode)
+import Audio.WebAudio.Types (WebAudio, AudioContext, OscillatorNode, DestinationNode)
 import Audio.WebAudio.AudioContext as AuCtx
 import Audio.WebAudio.AudioParam as AuParam
 import Audio.WebAudio.Oscillator as AuOsc
 import Audio.WebAudio.GainNode (gain)
+import Control.Monad
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Console as Console
 import Data.Traversable
+import Data.List.Lazy
+import Data.Int
+import Data.Tuple
+
 
 -- import Music.Intervals
 import Music.Pitch
@@ -72,6 +77,19 @@ component =
   init a Nothing = a
   init _ (Just a) = pure a
 
+  playSequence :: forall eff. AudioContext -> DestinationNode -> Number -> (List Chord) -> (Eff ( wau :: WebAudio | eff ) Unit)
+  playSequence ctx dest duration chords = do
+      g <- createGain ctx 1.0
+      traverse_ (\(Tuple chord idx) -> scheduleChordSynth chord idx g) $ zip chords (iterate (_ + 1) 0)
+    where
+      scheduleChordSynth :: Chord -> Int -> GainNode -> (Eff ( wau :: WebAudio | eff ) Unit)
+      scheduleChordSynth chord idx g = do
+        synth <- polySynth' ctx (chordNotes chord) g
+        synth `plugInto` dest
+        play synth startTime
+        stop synth (startTime + duration)
+          where startTime = (toNumber idx) * duration
+
   eval :: Query ~> H.ComponentDSL State Query Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
   eval = case _ of
     ToggleState next -> do
@@ -79,18 +97,26 @@ component =
       ctx <- H.liftEff <<< init AuCtx.makeAudioContext =<< H.gets (_.ctx)
 
       let
-          notes :: Array Note
-          notes = chordNotes (makeTriad Major Perfect C Natural (Octave 4))
+          chords :: List Chord
+          chords = (\blah -> blah (Octave 4)) <$>
+                      ((makeTriad Major C Natural)
+                       : (makeTriad Minor D Natural)
+                       : (makeTriad Minor E Natural)
+                       : (singleton $ makeTriad Major F Natural))
+          chords2 :: List Chord
+          chords2 = (\blah -> blah (Octave 5)) <$>
+                     ((makeTriad Major C Natural)
+                       : (makeTriad Minor D Natural)
+                       : (makeTriad Minor E Natural)
+                       : (singleton $ makeTriad Major G Natural))
 
-      H.liftEff $ traverse_ (Console.log <<< show) notes
 
-      synth <- H.liftEff <<< init (polySynth ctx notes 1.0) =<< H.gets (_.synth)
       dest <- H.liftEff $ AuCtx.destination ctx
-      H.liftEff $ synth `plugInto` dest
+      H.liftEff $ playSequence ctx dest 0.33 (take 30 $ cycle chords)
+      H.liftEff $ playSequence ctx dest 0.5 (take 20 $ cycle chords2)
 
-      H.liftEff <<< (if _ then stop synth else play synth) =<< H.gets (_.on)
 
       H.modify (\state -> { on: not state.on
                           , ctx: Just ctx
-                          , synth: Just synth })
+                          , synth: Nothing })
       pure next

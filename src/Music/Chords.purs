@@ -1,11 +1,12 @@
 module Music.Chords where
 
+import Music.LetterNotation
+import Music.Notes
+import Music.Pitch
+import Music.SetTheory
 import Prelude
 
-import Music.Notes
-import Music.SetTheory
-import Music.LetterNotation
-import Music.Pitch
+import Data.Array
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
 
@@ -32,25 +33,26 @@ intervalName name = intervalClass (case name of
   )
 
 -- also dominant
-data ThirdQuality = Major | Minor --  | Sus2 | Sus4
-data FifthQuality = Perfect | Augmented | Diminished
+data ChordQuality = Major | Minor | Augmented | Diminished
 
-
-makeTriad' :: ThirdQuality -> FifthQuality -> PitchClassDescription -> Octave -> Chord
-makeTriad' thirdQ fifthQ pcd oct = Chord oct root intervals
+makeTriad' :: ChordQuality -> PitchClassDescription -> Octave -> Chord
+makeTriad' cq pcd oct = Chord oct root intervals
   where root = pitchClass'' pcd
-        thirdInterval = case thirdQ of
+        thirdInterval = case cq of
           Major -> intervalName MajorThird
           Minor -> intervalName MinorThird
-        fifthInterval = case fifthQ of
-          Perfect -> intervalName PerfectFifth
+          Augmented -> intervalName MajorThird
+          Diminished -> intervalName MinorThird
+        fifthInterval = case cq of
+          Major -> intervalName PerfectFifth
+          Minor -> intervalName PerfectFifth
           Augmented -> intervalName MinorSixth
           Diminished -> intervalName Tritone
         intervals = (Set.singleton thirdInterval) <> (Set.singleton fifthInterval)
 
-makeTriad :: ThirdQuality -> FifthQuality -> NoteLetter -> Accidental -> Octave -> Chord
-makeTriad tq fq nl accidental oct = makeTriad' tq fq (Tuple nl accidental) oct
+makeTriad :: ChordQuality -> NoteLetter -> Accidental -> Octave -> Chord
+makeTriad cq nl accidental oct = makeTriad' cq (Tuple nl accidental) oct
 
 chordNotes :: Chord -> (Array Note)
 chordNotes (Chord octave pc intervals) =
-  map (\i -> Note octave (transposePitchClass pc i)) (Set.toUnfoldable intervals)
+  (Note octave pc) : (map (\i -> Note octave (transposePitchClass pc i)) (Set.toUnfoldable intervals))

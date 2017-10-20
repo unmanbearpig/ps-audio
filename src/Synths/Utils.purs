@@ -26,8 +26,8 @@ import Music.Pitch
 type GainValue = Number
 
 class Player a where
-  play :: ∀ eff. a -> (Eff ( wau :: WebAudio | eff ) Unit)
-  stop :: ∀ eff. a -> (Eff ( wau :: WebAudio | eff ) Unit)
+  play :: ∀ eff. a -> Number -> (Eff ( wau :: WebAudio | eff ) Unit)
+  stop :: ∀ eff. a -> Number -> (Eff ( wau :: WebAudio | eff ) Unit)
 
 class Gain a where
   setGain :: ∀ eff. a -> Number -> (Eff ( wau :: WebAudio | eff ) Unit)
@@ -47,10 +47,11 @@ noteOsc ctx note = do
   osc <- AuCtx.createOscillator ctx
   freqParam <- AuOsc.frequency osc
   AuParam.setValue (pitchFreq $ toHz note) freqParam
+  AuOsc.setOscillatorType AuOsc.Sine osc
   pure osc
 
-startOsc :: ∀ eff. OscillatorNode -> (Eff ( wau :: WebAudio | eff) Unit)
-startOsc osc = AuOsc.startOscillator 0.0 osc
+startOsc :: ∀ eff. OscillatorNode -> Number -> (Eff ( wau :: WebAudio | eff) Unit)
+startOsc osc startTime = AuOsc.startOscillator startTime osc
 
-stopOsc :: ∀ eff. OscillatorNode -> (Eff ( wau :: WebAudio | eff) Unit)
-stopOsc osc = AuOsc.stopOscillator 0.0 osc
+stopOsc :: ∀ eff. OscillatorNode -> Number -> (Eff ( wau :: WebAudio | eff) Unit)
+stopOsc osc stopTime = AuOsc.stopOscillator stopTime osc
