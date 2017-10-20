@@ -11,7 +11,7 @@
   "dependencies": {
     "purescript-console": "^3.0.0",
     "purescript-halogen": "^2.0.0",
-    "purescript-webaudio": "adkelley/purescript-webaudio",
+    "purescript-webaudio": "unmanbearpig/purescript-webaudio",
     "purescript-sets": "^3.0.0",
     "purescript-typelevel": "^3.0.0",
     "purescript-newtype": "^2.0.0"

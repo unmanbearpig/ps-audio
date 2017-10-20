@@ -1,33 +1,32 @@
 module Synths.Poly where
 
+import Audio.WebAudio.AudioParam
 import Prelude
 import Synths.Utils
+
 import Audio.WebAudio.AudioContext as AuCtx
+import Audio.WebAudio.GainNode
+import Audio.WebAudio.AudioParam as AuParam
 import Control.Monad.Eff (Eff)
 import Data.Traversable (traverse, traverse_)
+import Data.Newtype
 
 newtype PolySynth = PolySynth { notes :: (Array Note)
                               , oscs :: (Array OscillatorNode)
                               , gainNode :: GainNode }
 
+derive instance newtypePolySynth :: Newtype PolySynth _
+
 polySynth :: ∀ eff. AudioContext -> (Array Note) -> GainValue -> (Eff ( wau :: WebAudio | eff ) PolySynth)
 polySynth ctx notes gainValue = do
   oscs <- traverse (noteOsc ctx) notes
   g <- createGain ctx gainValue
+  -- t <- AuCtx.currentTime ctx
+  -- _ <- linearRampToValueAtTime gainValue (t + 0.01) =<< gain g
   traverse_ (\osc -> AuCtx.connect osc g) oscs
   pure $ PolySynth { notes: notes
                    , oscs: oscs
                    , gainNode: g }
-
-
-polySynth' :: ∀ eff. AudioContext -> (Array Note) -> GainNode -> (Eff ( wau :: WebAudio | eff ) PolySynth)
-polySynth' ctx notes g = do
-  oscs <- traverse (noteOsc ctx) notes
-  traverse_ (\osc -> AuCtx.connect osc g) oscs
-  pure $ PolySynth { notes: notes
-                   , oscs: oscs
-                   , gainNode: g }
-
 
 
 instance auSouncePolySynth :: AuSource PolySynth where
