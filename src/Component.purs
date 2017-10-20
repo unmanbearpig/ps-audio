@@ -28,6 +28,8 @@ import Control.Monad.Eff.Console as Console
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Data.Monoid
+import Synths.Sequence
 
 data Query a = ToggleState a
 
@@ -74,27 +76,7 @@ component =
   init a Nothing = a
   init _ (Just a) = pure a
 
-  playSequence :: forall eff dest. AudioNode dest => AudioContext -> dest -> Number -> (List Chord) -> (Eff ( wau :: WebAudio, console :: CONSOLE | eff ) Unit)
-  playSequence ctx dest duration chords = do
-      g <- createGain ctx 1.0
-      AuCtx.connect g dest
-      traverse_ (\(Tuple chord idx) -> scheduleChordSynth chord idx g) $ zip chords (iterate (_ + 1) 0)
-    where
-      scheduleChordSynth :: Chord -> Int -> GainNode -> (Eff ( wau :: WebAudio, console :: CONSOLE | eff ) Unit)
-      scheduleChordSynth chord idx g = do
-        synth <- polySynth ctx (chordNotes chord) 0.0
-        synthGain <- gain ((unwrap synth).gainNode)
-        synth `plugInto` g
 
-        play synth startTime
-        _ <- AuParam.linearRampToValueAtTime 0.0 (startTime) synthGain
-        _ <- AuParam.linearRampToValueAtTime 1.0 (startTime + fadeDuration) synthGain
-        _ <- AuParam.linearRampToValueAtTime 1.0 (endTime) synthGain
-        _ <- AuParam.linearRampToValueAtTime 0.0 (endTime + duration) synthGain
-        stop synth (endTime + duration)
-          where startTime = (toNumber idx) * duration
-                endTime = (startTime + duration)
-                fadeDuration = (duration * 0.025)
   eval :: Query ~> H.ComponentDSL State Query Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
   eval = case _ of
     ToggleState next -> do
@@ -105,15 +87,17 @@ component =
           chords :: List Chord
           chords = (\blah -> blah (Octave 4)) <$>
                       ((makeTriad Major C Natural)
-                       : (makeTriad Minor D Natural)
-                       : (makeTriad Minor E Natural)
-                       : (singleton $ makeTriad Major F Natural))
+                       : (makeTriad Augmented C Natural)
+                       : (makeTriad Minor A Natural)
+                       : (makeTriad Diminished G Natural)
+                       : mempty)
           chords2 :: List Chord
           chords2 = (\blah -> blah (Octave 4)) <$>
-                     ((makeTriad Major C Natural)
+                     ((makeTriad Minor C Sharp)
                        : (makeTriad Minor A Natural)
                        : (makeTriad Minor B Natural)
-                       : (singleton $ makeTriad Major G Natural))
+                       : (makeTriad Major G Natural)
+                       : mempty)
 
 
       dest <- H.liftEff $ AuCtx.destination ctx
@@ -122,8 +106,11 @@ component =
 
       H.liftEff $ AuCtx.connect compressor dest
 
-      H.liftEff $ playSequence ctx compressor 0.333333 (take 30 $ cycle chords)
-      H.liftEff $ playSequence ctx compressor 0.25 (take 20 $ cycle chords2)
+      H.liftEff $ AuParam.setValue 1.0 =<< threshold compressor
+      H.liftEff $ AuParam.setValue 30.0 =<< ratio compressor
+
+      H.liftEff $ playSequence ctx compressor 0.20 (take 100 $ cycle chords)
+      H.liftEff $ playSequence ctx compressor 0.25 (take 100 $ cycle chords2)
 
 
       H.modify (\state -> { on: not state.on
