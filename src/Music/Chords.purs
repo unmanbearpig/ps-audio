@@ -1,11 +1,11 @@
 module Music.Chords where
 
+import Prelude
 import Music.LetterNotation
 import Music.Notes
 import Music.Pitch
 import Music.SetTheory
-import Prelude
-
+import Data.Maybe (Maybe(..))
 import Data.Array
 import Data.Set as Set
 import Data.Tuple (Tuple(..))
@@ -41,6 +41,19 @@ instance showChordQuality :: Show ChordQuality where
     Minor -> "Minor"
     Augmented -> "Augmented"
     Diminished -> "Dimineshed"
+
+
+chordQualityNames :: Array String
+chordQualityNames = [ "Major", "Minor", "Augmented", "Diminished" ]
+
+parseChordQuality :: String -> Maybe ChordQuality
+parseChordQuality = case _ of
+  "Major" -> Just Major
+  "Minor" -> Just Minor
+  "Augmented" -> Just Augmented
+  "Diminished" -> Just Diminished
+  _ -> Nothing
+
 
 makeTriad' :: ChordQuality -> PitchClassDescription -> Octave -> Chord
 makeTriad' cq pcd oct = Chord oct root intervals

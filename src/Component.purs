@@ -30,37 +30,6 @@ type State = { ctx :: Maybe AudioContext
              , chordPitchClass :: PitchClassDescription
              , octave :: Octave}
 
-notes :: Array String
-notes = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "B" ]
-
-parseNote :: String -> Maybe PitchClassDescription
-parseNote = case _ of
-  "C" -> Just (Tuple C Natural)
-  "C#" -> Just (Tuple C Sharp)
-  "D" -> Just (Tuple D Natural)
-  "D#" -> Just (Tuple D Natural)
-  "E" -> Just (Tuple E Natural)
-  "F" -> Just (Tuple F Natural)
-  "F#" -> Just (Tuple F Natural)
-  "G" -> Just (Tuple G Natural)
-  "G#" -> Just (Tuple G Natural)
-  "A" -> Just (Tuple A Natural)
-  "A#" -> Just (Tuple A Sharp)
-  "B" -> Just (Tuple B Natural)
-  _ -> Nothing
-
-chordQualities :: Array String
-chordQualities = [ "Major", "Minor", "Augmented", "Diminished" ]
-
-parseChordQuality :: String -> Maybe ChordQuality
-parseChordQuality = case _ of
-  "Major" -> Just Major
-  "Minor" -> Just Minor
-  "Augmented" -> Just Augmented
-  "Diminished" -> Just Diminished
-  _ -> Nothing
-
-
 component :: forall eff. H.Component HH.HTML Query Unit Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
 component =
   H.component
@@ -86,9 +55,9 @@ component =
       , HH.p_
           [ HH.text "Why not toggle this button:" ]
       , HH.select [ ]
-        (map (\noteName -> HH.option [ ] [ HH.text noteName ]) notes)
+        (map (\noteName -> HH.option [ ] [ HH.text noteName ]) pitchClassNames)
       , HH.select [ HE.onValueChange (HE.input ChangeChordQuality) ]
-        (map (\cqName -> HH.option [ ] [ HH.text cqName ]) chordQualities)
+        (map (\cqName -> HH.option [ ] [ HH.text cqName ]) chordQualityNames)
       , HH.button
           [ HE.onClick (HE.input_ Play) ]
           [ HH.text  "Play"
@@ -117,7 +86,7 @@ component =
   eval = case _ of
     ChangePitchClass str next -> do
       pc <- H.gets (_.chordPitchClass)
-      H.modify (\state -> state { chordPitchClass = (fromMaybe state.chordPitchClass (parseNote str)) })
+      H.modify (\state -> state { chordPitchClass = (fromMaybe state.chordPitchClass (parsePitchClass str)) })
       pure next
 
     ChangeChordQuality str next -> do

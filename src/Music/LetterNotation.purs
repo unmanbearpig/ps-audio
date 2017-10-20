@@ -107,3 +107,22 @@ pitchClass' letter accidental = transposePitchClass (toPitchClass letter) (toInt
 
 pitchClass'' :: PitchClassDescription -> PitchClass
 pitchClass'' (Tuple noteLetter accidental) = pitchClass' noteLetter accidental
+
+pitchClassNames :: Array String
+pitchClassNames = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "B" ]
+
+parsePitchClass :: String -> Maybe PitchClassDescription
+parsePitchClass = case _ of
+  "C" -> Just (Tuple C Natural)
+  "C#" -> Just (Tuple C Sharp)
+  "D" -> Just (Tuple D Natural)
+  "D#" -> Just (Tuple D Natural)
+  "E" -> Just (Tuple E Natural)
+  "F" -> Just (Tuple F Natural)
+  "F#" -> Just (Tuple F Natural)
+  "G" -> Just (Tuple G Natural)
+  "G#" -> Just (Tuple G Natural)
+  "A" -> Just (Tuple A Natural)
+  "A#" -> Just (Tuple A Sharp)
+  "B" -> Just (Tuple B Natural)
+  _ -> Nothing
