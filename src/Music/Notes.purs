@@ -8,6 +8,8 @@ import Music.Pitch
 import Music.SetTheory
 import Prelude
 
+newtype Interval = Interval Int
+
 newtype Octave = Octave Int
 
 derive instance newtypeOctave :: Newtype Octave _
@@ -19,16 +21,27 @@ instance toMidiNoteOctave :: ToMidiNote Octave where
   toMidiNote (Octave oct) = MidiNote $ (oct + 1) * 12
 
 
-data Note = Note Octave PitchClassDescription
+data NoteDescription = NoteDescription Octave PitchClassDescription
 
-makeNote :: Octave -> NoteLetter -> Accidental -> Note
-makeNote oct noteLetter accidental = Note oct (Tuple noteLetter accidental)
+data Note = Note Octave PitchClass
 
 instance toMidiNoteNote :: ToMidiNote Note where
-  toMidiNote (Note oct pcd) = transposeMidiNote (toMidiNote oct) (unwrap $ pitchClass'' pcd)
+  toMidiNote (Note oct pc) = transposeMidiNote (toMidiNote oct) (unwrap pc)
+
+instance showNote :: Show Note where
+  show (Note oct pc) = "(Octave " <> show oct <> " + " <> show pc <> " semitones)"
 
 instance pitchNote :: Pitch Note where
   toHz = toHz <<< toMidiNote
 
-instance showNote :: Show Note where
-  show (Note oct (Tuple pc accidental)) = (show pc) <> (show accidental) <> show oct
+makeNoteDesc :: Octave -> NoteLetter -> Accidental -> NoteDescription
+makeNoteDesc oct noteLetter accidental = NoteDescription oct (Tuple noteLetter accidental)
+
+instance toMidiNoteNoteDescription :: ToMidiNote NoteDescription where
+  toMidiNote (NoteDescription oct pcd) = transposeMidiNote (toMidiNote oct) (unwrap $ pitchClass'' pcd)
+
+instance pitchNoteDescription :: Pitch NoteDescription where
+  toHz = toHz <<< toMidiNote
+
+instance showNoteDescription :: Show NoteDescription where
+  show (NoteDescription oct (Tuple pc accidental)) = (show pc) <> (show accidental) <> show oct

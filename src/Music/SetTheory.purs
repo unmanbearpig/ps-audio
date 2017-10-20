@@ -4,6 +4,7 @@ import Prelude
 import Data.Newtype (class Newtype, wrap, unwrap)
 -- import Data.Group
 import Data.Monoid (class Monoid)
+import Data.Set
 
 newtype IntervalClass = IntervalClass Int
 

@@ -24,6 +24,7 @@ import Music.Pitch
 import Music.Notes
 import Music.SetTheory
 import Music.LetterNotation
+import Music.Chords
 import Synths
 
 data Query a = ToggleState a
@@ -79,9 +80,7 @@ component =
 
       let
           notes :: Array Note
-          notes = [ (makeNote (Octave 3) A Natural)
-                  , (makeNote (Octave 4) C Natural)
-                  , (makeNote (Octave 5) G Flat) ]
+          notes = chordNotes (makeTriad Major Perfect C Natural (Octave 4))
 
       H.liftEff $ traverse_ (Console.log <<< show) notes
 
