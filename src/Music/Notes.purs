@@ -24,6 +24,8 @@ data NoteDescription = NoteDescription Octave PitchClassDescription
 
 data Note = Note Octave PitchClass
 
+derive instance eqNote :: Eq Note
+
 instance toMidiNoteNote :: ToMidiNote Note where
   toMidiNote (Note oct pc) = transposeMidiNote (toMidiNote oct) (unwrap pc)
 
@@ -45,5 +47,12 @@ instance pitchNoteDescription :: Pitch NoteDescription where
 instance showNoteDescription :: Show NoteDescription where
   show (NoteDescription oct (PitchClassDescription pc accidental)) = (show pc) <> (show accidental) <> show oct
 
+midiToNote :: MidiNote -> Note
+midiToNote (MidiNote n) = Note (Octave octNumber) (pitchClass $ n `mod` 12)
+  where octNumber = (n / 12) -1
+
 notePitchClass :: Note -> PitchClass
 notePitchClass (Note _ pc) = pc
+
+-- transposeNote :: Note -> Interval -> Note
+-- transposeNote (Note oct pc) =

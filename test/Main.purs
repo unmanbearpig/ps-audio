@@ -7,6 +7,7 @@ import Control.Monad.Eff (Eff)
 import Test.Unit (suite, test, timeout)
 import Test.Unit.Main (runTest)
 import Test.Unit.Assert as Assert
+import Test.Unit.QuickCheck (quickCheck)
 
 import Music.MidiNote
 import Music.Pitch
@@ -39,6 +40,11 @@ main = runTest do
       Assert.equal (Hz  13.75) (toHz (Note (Octave (-1)) (pitchClass' A Natural)))
       -- doesn't match exactly, not sure if correct
       -- Assert.equal (Hz  14.568) (toHz (Note (Octave (-1)) (Note A Sharp)))
+
+    test "note <-> midi note conversion" do
+      Assert.equal (midiToNote $ MidiNote 60) (Note (Octave 4) (pitchClass' C Natural))
+      Assert.equal (midiToNote $ MidiNote 61) (Note (Octave 4) (pitchClass' C Sharp))
+      quickCheck (\n -> let midi = (MidiNote n) in (toMidiNote <<< midiToNote) midi == midi)
 
     -- test "showNote" do
     --   Assert.equal "C♭" (show $ Note C Flat)
