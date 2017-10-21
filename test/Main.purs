@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Monad.Eff (Eff)
 
+import Data.Newtype (unwrap)
 import Test.Unit (suite, test, timeout)
 import Test.Unit.Main (runTest)
 import Test.Unit.Assert as Assert
@@ -44,7 +45,12 @@ main = runTest do
     test "note <-> midi note conversion" do
       Assert.equal (midiToNote $ MidiNote 60) (Note (Octave 4) (pitchClass' C Natural))
       Assert.equal (midiToNote $ MidiNote 61) (Note (Octave 4) (pitchClass' C Sharp))
-      quickCheck (\n -> let midi = (MidiNote n) in (toMidiNote <<< midiToNote) midi == midi)
+      quickCheck \n -> let midi = (MidiNote n) in (toMidiNote <<< midiToNote) midi == midi
+
+    test "transpose note" do
+      Assert.equal (Note (Octave 4) (pitchClass' C Sharp)) (transposeNote (Note (Octave 4) (pitchClass' C Natural)) (Interval 1))
+      quickCheck \n -> let note = (midiToNote (MidiNote n)) in notePitchClass (transposeNote note (Interval 12)) == notePitchClass note
+      quickCheck \n -> let note = (midiToNote (MidiNote n)) in unwrap (noteOctave (transposeNote note (Interval 12))) == (unwrap (noteOctave note)) + 1
 
     -- test "showNote" do
     --   Assert.equal "C♭" (show $ Note C Flat)

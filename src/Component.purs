@@ -3,6 +3,7 @@ module Component where
 import Data.List.Lazy (singleton)
 import Music.Chords
 import Music.LetterNotation
+import Music.MidiNote
 import Prelude
 import Synths
 import Synths.Sequence (playSequence)
@@ -31,12 +32,13 @@ makeChord :: State -> Chord
 makeChord record = makeTriad' record.chordQuality record.chordPitchClass (Octave 4)
 
 renderNote :: Note -> H.ComponentHTML Query
-renderNote note = HH.div [ ] [ HH.text ("note: " <> (show (pitchClassDescription)) <> " (root note + " <> (show $ interval) <> " semitones)") ]
+renderNote note = HH.div [ ] [ HH.text ("note: " <> (show (pitchClassDescription)) <> " (root note + " <> (show $ interval) <> " semitones) " <> show midiNote ) ]
   where
     pitchClass = notePitchClass note
     pitchClassDescription = pitchClassLetterNotation pitchClass
     interval :: Int
     interval = unwrap pitchClass
+    midiNote = toMidiNote note
 
 renderChordPitches :: Chord -> Array (H.ComponentHTML Query)
 renderChordPitches chord = map (\p -> HH.div [ ] [ HH.text (show p) ]) pitches

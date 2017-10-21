@@ -72,6 +72,10 @@ makeTriad' cq pcd oct = Chord oct root intervals
 makeTriad :: ChordQuality -> NoteLetter -> Accidental -> Octave -> Chord
 makeTriad cq nl accidental oct = makeTriad' cq (PitchClassDescription nl accidental) oct
 
+data ChordInversion = RootPosition | Inversion Int
+
 chordNotes :: Chord -> (Array Note)
-chordNotes (Chord octave pc intervals) =
-  (Note octave pc) : (map (\i -> Note octave (transposePitchClass pc i)) (Set.toUnfoldable intervals))
+chordNotes  (Chord octave pc intervalClasses) =
+  (Note octave pc) : (map (\i -> transposeNote rootNote (toInterval i)) (Set.toUnfoldable intervalClasses))
+  where rootNote = Note octave pc
+-- chordNotes :: ChordInversion -> Chord -> (Array Note)

@@ -9,6 +9,12 @@ import Prelude
 
 newtype Interval = Interval Int
 
+class ToInterval a where
+  toInterval :: a -> Interval
+
+instance toIntervalIntervalClass :: ToInterval IntervalClass where
+  toInterval (IntervalClass n) = Interval n
+
 newtype Octave = Octave Int
 
 derive instance newtypeOctave :: Newtype Octave _
@@ -54,5 +60,8 @@ midiToNote (MidiNote n) = Note (Octave octNumber) (pitchClass $ n `mod` 12)
 notePitchClass :: Note -> PitchClass
 notePitchClass (Note _ pc) = pc
 
--- transposeNote :: Note -> Interval -> Note
--- transposeNote (Note oct pc) =
+transposeNote :: Note -> Interval -> Note
+transposeNote note (Interval i) = midiToNote $ transposeMidiNote (toMidiNote note) i
+
+noteOctave :: Note -> Octave
+noteOctave (Note oct _) = oct
