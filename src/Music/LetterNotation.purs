@@ -78,12 +78,12 @@ pitchClassLetterNotation (PitchClass p) =
     3 -> (PitchClassDescription D Sharp)
     4 -> (PitchClassDescription E Natural)
     5 -> (PitchClassDescription F Natural)
-    6 -> (PitchClassDescription G Natural)
-    7 -> (PitchClassDescription G Sharp)
-    8 -> (PitchClassDescription A Natural)
-    9 -> (PitchClassDescription A Sharp)
-    10 -> (PitchClassDescription B Natural)
-    11 -> (PitchClassDescription D Sharp)
+    6 -> (PitchClassDescription F Sharp)
+    7 -> (PitchClassDescription G Natural)
+    8 -> (PitchClassDescription G Sharp)
+    9 -> (PitchClassDescription A Natural)
+    10 -> (PitchClassDescription A Sharp)
+    11 -> (PitchClassDescription B Natural)
     _ -> unsafeCrashWith $ "PitchClass " <> show p <> " out of bounds."
 
 instance toPitchClassNoteLetter :: ToPitchClass NoteLetter where
