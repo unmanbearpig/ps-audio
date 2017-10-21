@@ -1,7 +1,6 @@
 module Music.Notes where
 
-import Data.Newtype
-import Data.Tuple
+import Data.Newtype (class Newtype, unwrap)
 import Music.LetterNotation
 import Music.MidiNote
 import Music.Pitch
@@ -35,7 +34,7 @@ instance pitchNote :: Pitch Note where
   toHz = toHz <<< toMidiNote
 
 makeNoteDesc :: Octave -> NoteLetter -> Accidental -> NoteDescription
-makeNoteDesc oct noteLetter accidental = NoteDescription oct (Tuple noteLetter accidental)
+makeNoteDesc oct noteLetter accidental = NoteDescription oct (PitchClassDescription noteLetter accidental)
 
 instance toMidiNoteNoteDescription :: ToMidiNote NoteDescription where
   toMidiNote (NoteDescription oct pcd) = transposeMidiNote (toMidiNote oct) (unwrap $ pitchClass'' pcd)
@@ -44,4 +43,7 @@ instance pitchNoteDescription :: Pitch NoteDescription where
   toHz = toHz <<< toMidiNote
 
 instance showNoteDescription :: Show NoteDescription where
-  show (NoteDescription oct (Tuple pc accidental)) = (show pc) <> (show accidental) <> show oct
+  show (NoteDescription oct (PitchClassDescription pc accidental)) = (show pc) <> (show accidental) <> show oct
+
+notePitchClass :: Note -> PitchClass
+notePitchClass (Note _ pc) = pc

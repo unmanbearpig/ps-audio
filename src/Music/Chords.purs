@@ -6,9 +6,8 @@ import Music.Notes
 import Music.Pitch
 import Music.SetTheory
 import Data.Maybe (Maybe(..))
-import Data.Array
+import Data.Array ((:))
 import Data.Set as Set
-import Data.Tuple (Tuple(..))
 
 data Chord = Chord Octave PitchClass (Set.Set IntervalClass)
 
@@ -71,7 +70,7 @@ makeTriad' cq pcd oct = Chord oct root intervals
         intervals = (Set.singleton thirdInterval) <> (Set.singleton fifthInterval)
 
 makeTriad :: ChordQuality -> NoteLetter -> Accidental -> Octave -> Chord
-makeTriad cq nl accidental oct = makeTriad' cq (Tuple nl accidental) oct
+makeTriad cq nl accidental oct = makeTriad' cq (PitchClassDescription nl accidental) oct
 
 chordNotes :: Chord -> (Array Note)
 chordNotes (Chord octave pc intervals) =

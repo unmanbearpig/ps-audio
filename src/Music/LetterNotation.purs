@@ -1,9 +1,7 @@
 module Music.LetterNotation where
 
-import Data.Tuple
 import Music.SetTheory
 import Prelude
-
 import Data.Enum (class Enum)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
@@ -64,23 +62,28 @@ instance showAccidental :: Show Accidental where
     Natural -> "♮"
     Sharp -> "♯"
 
-type PitchClassDescription = (Tuple NoteLetter Accidental)
+data PitchClassDescription = PitchClassDescription NoteLetter Accidental
+
+instance showPitchClassDescirption :: Show PitchClassDescription where
+  show (PitchClassDescription noteLetter accidental) = (show accidental) <> (show noteLetter)
+
+derive instance eqPitchClassDescription :: Eq PitchClassDescription
 
 pitchClassLetterNotation :: PitchClass -> PitchClassDescription
 pitchClassLetterNotation (PitchClass p) =
   case (unwrap p) of
-    0 -> (Tuple C Natural)
-    1 -> (Tuple C Sharp)
-    2 -> (Tuple D Natural)
-    3 -> (Tuple D Sharp)
-    4 -> (Tuple E Natural)
-    5 -> (Tuple F Natural)
-    6 -> (Tuple G Natural)
-    7 -> (Tuple G Sharp)
-    8 -> (Tuple A Natural)
-    9 -> (Tuple A Sharp)
-    10 -> (Tuple B Natural)
-    11 -> (Tuple D Sharp)
+    0 -> (PitchClassDescription C Natural)
+    1 -> (PitchClassDescription C Sharp)
+    2 -> (PitchClassDescription D Natural)
+    3 -> (PitchClassDescription D Sharp)
+    4 -> (PitchClassDescription E Natural)
+    5 -> (PitchClassDescription F Natural)
+    6 -> (PitchClassDescription G Natural)
+    7 -> (PitchClassDescription G Sharp)
+    8 -> (PitchClassDescription A Natural)
+    9 -> (PitchClassDescription A Sharp)
+    10 -> (PitchClassDescription B Natural)
+    11 -> (PitchClassDescription D Sharp)
     _ -> unsafeCrashWith $ "PitchClass " <> show p <> " out of bounds."
 
 instance toPitchClassNoteLetter :: ToPitchClass NoteLetter where
@@ -106,23 +109,23 @@ pitchClass' :: NoteLetter -> Accidental -> PitchClass
 pitchClass' letter accidental = transposePitchClass (toPitchClass letter) (toIntervalClass accidental)
 
 pitchClass'' :: PitchClassDescription -> PitchClass
-pitchClass'' (Tuple noteLetter accidental) = pitchClass' noteLetter accidental
+pitchClass'' (PitchClassDescription noteLetter accidental) = pitchClass' noteLetter accidental
 
 pitchClassNames :: Array String
 pitchClassNames = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "B" ]
 
 parsePitchClass :: String -> Maybe PitchClassDescription
 parsePitchClass = case _ of
-  "C" -> Just (Tuple C Natural)
-  "C#" -> Just (Tuple C Sharp)
-  "D" -> Just (Tuple D Natural)
-  "D#" -> Just (Tuple D Natural)
-  "E" -> Just (Tuple E Natural)
-  "F" -> Just (Tuple F Natural)
-  "F#" -> Just (Tuple F Natural)
-  "G" -> Just (Tuple G Natural)
-  "G#" -> Just (Tuple G Natural)
-  "A" -> Just (Tuple A Natural)
-  "A#" -> Just (Tuple A Sharp)
-  "B" -> Just (Tuple B Natural)
+  "C" -> Just (PitchClassDescription C Natural)
+  "C#" -> Just (PitchClassDescription C Sharp)
+  "D" -> Just (PitchClassDescription D Natural)
+  "D#" -> Just (PitchClassDescription D Natural)
+  "E" -> Just (PitchClassDescription E Natural)
+  "F" -> Just (PitchClassDescription F Natural)
+  "F#" -> Just (PitchClassDescription F Natural)
+  "G" -> Just (PitchClassDescription G Natural)
+  "G#" -> Just (PitchClassDescription G Natural)
+  "A" -> Just (PitchClassDescription A Natural)
+  "A#" -> Just (PitchClassDescription A Sharp)
+  "B" -> Just (PitchClassDescription B Natural)
   _ -> Nothing
