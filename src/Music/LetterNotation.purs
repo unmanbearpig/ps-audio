@@ -112,7 +112,7 @@ pitchClass'' :: PitchClassDescription -> PitchClass
 pitchClass'' (PitchClassDescription noteLetter accidental) = pitchClass' noteLetter accidental
 
 pitchClassNames :: Array String
-pitchClassNames = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "B" ]
+pitchClassNames = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" ]
 
 parsePitchClass :: String -> Maybe PitchClassDescription
 parsePitchClass = case _ of
@@ -122,9 +122,9 @@ parsePitchClass = case _ of
   "D#" -> Just (PitchClassDescription D Natural)
   "E" -> Just (PitchClassDescription E Natural)
   "F" -> Just (PitchClassDescription F Natural)
-  "F#" -> Just (PitchClassDescription F Natural)
+  "F#" -> Just (PitchClassDescription F Sharp)
   "G" -> Just (PitchClassDescription G Natural)
-  "G#" -> Just (PitchClassDescription G Natural)
+  "G#" -> Just (PitchClassDescription G Sharp)
   "A" -> Just (PitchClassDescription A Natural)
   "A#" -> Just (PitchClassDescription A Sharp)
   "B" -> Just (PitchClassDescription B Natural)
