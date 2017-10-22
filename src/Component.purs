@@ -4,6 +4,7 @@ import Data.List.Lazy (singleton)
 import Music.Chords
 import Music.LetterNotation
 import Music.MidiNote
+import Music.Intervals
 import Prelude
 import Synths
 import Synths.Sequence (playSequence)
@@ -18,11 +19,14 @@ import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
 import Data.Newtype (unwrap)
 import Data.List
 import Data.Array as Array
+import Data.Set as Set
+import Data.List as List
 
-data Query a = Play a | ChangeChordQuality String a | ChangePitchClass String a
+data Query a = Play a | ChangeChordQuality String a | ChangePitchClass String a | ChangeChordInversion String a
 
 type State = { ctx :: Maybe AudioContext
              , dest :: Maybe DynamicsCompressorNode
@@ -34,18 +38,19 @@ type State = { ctx :: Maybe AudioContext
 makeChord :: State -> Chord
 makeChord record = makeTriad' record.chordQuality record.chordPitchClass (Octave 4)
 
-renderNote :: Note -> H.ComponentHTML Query
-renderNote note = HH.div [ ] [ HH.text ("note: " <> (show (pitchClassDescription)) <> " (root note + " <> (show $ interval) <> " semitones) " <> show midiNote ) ]
+renderNote :: Note -> Note -> H.ComponentHTML Query
+renderNote root note = HH.div [ ] [ HH.text ("note: Octave " <> (show oct) <> " " <> (show (pitchClassDescription)) <> " (root note + " <> (show $ interval) <> " semitones) " <> (show $ diffNotes note root) <> " from actual root. " <> show midiNote ) ]
   where
     pitchClass = notePitchClass note
     pitchClassDescription = pitchClassLetterNotation pitchClass
     interval :: Int
     interval = unwrap pitchClass
     midiNote = toMidiNote note
+    (Octave oct) = noteOctave note
 
-renderChordPitches :: Chord -> Array (H.ComponentHTML Query)
-renderChordPitches chord = Array.fromFoldable $ map (\p -> HH.div [ ] [ HH.text (show p) ]) pitches
-  where pitches = map toHz $ chordNotes RootPosition chord
+renderChordPitches :: ChordInversion -> Chord -> Array (H.ComponentHTML Query)
+renderChordPitches inv chord = Array.fromFoldable $ map (\p -> HH.div [ ] [ HH.text (show p) ]) pitches
+  where pitches = map toHz $ List.fromFoldable $ chordNotes inv chord
 
 component :: forall eff. H.Component HH.HTML Query Unit Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
 component =
@@ -76,15 +81,21 @@ component =
         (map (\noteName -> HH.option [ ] [ HH.text noteName ]) pitchClassNames)
       , HH.select [ HE.onValueChange (HE.input ChangeChordQuality) ]
         (map (\cqName -> HH.option [ ] [ HH.text cqName ]) chordQualityNames)
+      , HH.select [ HE.onValueChange (HE.input ChangeChordInversion) ]
+        (map (\inv -> HH.option [ ] [ HH.text (show inv) ]) $ Array.fromFoldable $ possibleChordInversions $ makeChord state)
+      , HH.input [ HE.onValueChange (HE.input ChangeChordInversion) ]
       , HH.button
           [ HE.onClick (HE.input_ Play) ]
           [ HH.text  "Play"
           ]
+      , HH.p [ ] [ HH.text $ show state.chordInversion ]
       , HH.p [ ] [ HH.text $ "Octave " <> show state.octave ]
-      , HH.p [ ] (Array.fromFoldable $ map renderNote (chordNotes RootPosition chord))
-      , HH.p [ ] ( [ HH.text ("pitches:") ] <> renderChordPitches chord )
+      , HH.p [ ] (Array.fromFoldable $ map (renderNote root) $ Array.fromFoldable $ chordNotes chordInversion chord)
+      , HH.p [ ] ( [ HH.text ("pitches:") ] <> renderChordPitches chordInversion chord )
       ]
     where chord = makeChord state
+          root = chordRoot chord
+          chordInversion = state.chordInversion
 
   initCtx :: ∀ eff. Maybe AudioContext -> (Eff ( wau :: WebAudio | eff) AudioContext)
   initCtx (Just ctx) = pure ctx
@@ -117,6 +128,12 @@ component =
     ChangeChordQuality str next -> do
       cq <- H.gets (_.chordQuality)
       H.modify (\state -> state { chordQuality = (fromMaybe state.chordQuality (parseChordQuality str)) })
+      pure next
+
+    ChangeChordInversion str next -> do
+      cInv <- H.gets (_.chordInversion)
+      H.liftEff $ Console.log $ "changing chord inversion from " <> show cInv <> " to " <> str
+      H.modify (\state -> state { chordInversion = fromMaybe state.chordInversion (parseChordInversion str) })
       pure next
 
     Play next -> do

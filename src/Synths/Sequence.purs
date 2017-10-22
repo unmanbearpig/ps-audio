@@ -15,6 +15,8 @@ import Music.Chords (Chord, chordNotes, ChordInversion(..))
 import Synths.Poly (polySynth)
 import Synths.Utils
 
+import Data.Set as Set
+
 playSequence :: forall eff dest. AudioNode dest => AudioContext -> dest -> Number -> (List Chord) -> (Eff ( wau :: WebAudio, console :: CONSOLE | eff ) Unit)
 playSequence ctx dest duration chords = do
      g <- createGain ctx 1.0
@@ -23,7 +25,7 @@ playSequence ctx dest duration chords = do
   where
     scheduleChordSynth :: Chord -> Int -> GainNode -> (Eff ( wau :: WebAudio, console :: CONSOLE | eff ) Unit)
     scheduleChordSynth chord idx g = do
-      synth <- polySynth ctx (chordNotes RootPosition chord) 0.0
+      synth <- polySynth ctx (Set.toUnfoldable $ chordNotes RootPosition chord) 0.0
       synthGain <- gain ((unwrap synth).gainNode)
       synth `plugInto` g
 

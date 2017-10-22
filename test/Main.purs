@@ -9,11 +9,17 @@ import Test.Unit (suite, test, timeout)
 import Test.Unit.Main (runTest)
 import Test.Unit.Assert as Assert
 import Test.Unit.QuickCheck (quickCheck)
+import Data.Monoid (mempty)
+import Data.List
+import Data.Set as Set
+import Data.Maybe
 
 import Music.MidiNote
 import Music.Pitch
 import Music.LetterNotation
 import Music.Notes
+import Music.Chords
+import Music.Intervals
 
 main = runTest do
   suite "music" do
@@ -51,6 +57,28 @@ main = runTest do
       Assert.equal (Note (Octave 4) (pitchClass' C Sharp)) (transposeNote (Note (Octave 4) (pitchClass' C Natural)) (Interval 1))
       quickCheck \n -> let note = (midiToNote (MidiNote n)) in notePitchClass (transposeNote note (Interval 12)) == notePitchClass note
       quickCheck \n -> let note = (midiToNote (MidiNote n)) in unwrap (noteOctave (transposeNote note (Interval 12))) == (unwrap (noteOctave note)) + 1
+
+    test "diffNotes" do
+      Assert.equal (Interval 1) (diffNotes (Note (Octave 1) (pitchClass' C Sharp)) (Note (Octave 1) (pitchClass' C Natural)))
+      Assert.equal (Interval 2) (diffNotes (Note (Octave 1) (pitchClass' D Natural)) (Note (Octave 1) (pitchClass' C Natural)))
+      Assert.equal (Interval 12) (diffNotes (Note (Octave 2) (pitchClass' C Natural)) (Note (Octave 1) (pitchClass' C Natural)))
+
+    test "chord inversions" do
+      Assert.equal
+        ( (Set.singleton (Note (Octave 4) (pitchClass' G Sharp)))
+        <> (Set.singleton (Note (Octave 5) (pitchClass' C Natural)))
+        <> (Set.singleton (Note (Octave 5) (pitchClass' D Sharp)))
+        <> mempty) (chordNotes RootPosition (makeTriad Major G Sharp (Octave 4)))
+
+      Assert.equal
+        ( (Set.singleton $ Note (Octave 4) (pitchClass' C Natural))
+        <> (Set.singleton $ Note (Octave 4) (pitchClass' D Sharp))
+        <> (Set.singleton $ Note (Octave 4) (pitchClass' G Sharp))
+        <> mempty) (chordNotes (Inversion 1) (makeTriad Major G Sharp (Octave 4)))
+
+    test "parse chord inversion" do
+      Assert.equal (Just RootPosition) (parseChordInversion "Root position")
+      Assert.equal (Just $ Inversion 1) (parseChordInversion "Chord inversion 1")
 
     -- test "showNote" do
     --   Assert.equal "C♭" (show $ Note C Flat)

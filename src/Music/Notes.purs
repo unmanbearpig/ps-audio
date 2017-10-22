@@ -1,30 +1,15 @@
 module Music.Notes where
 
-import Data.Newtype (class Newtype, unwrap)
+import Prelude
+import Data.Newtype (unwrap)
 import Music.LetterNotation
 import Music.MidiNote
 import Music.Pitch
 import Music.SetTheory
-import Prelude
+import Music.Intervals
 
-newtype Interval = Interval Int
-
-class ToInterval a where
-  toInterval :: a -> Interval
-
-instance toIntervalIntervalClass :: ToInterval IntervalClass where
-  toInterval (IntervalClass n) = Interval n
-
-newtype Octave = Octave Int
-
-derive instance newtypeOctave :: Newtype Octave _
-derive newtype instance eqOctave :: Eq Octave
-instance showOctave :: Show Octave where
-  show (Octave n) = show n
-
-instance toMidiNoteOctave :: ToMidiNote Octave where
-  toMidiNote (Octave oct) = MidiNote $ (oct + 1) * 12
-
+diffNotes :: Note -> Note -> Interval
+diffNotes n1 n2 = diffMidiNotes (toMidiNote n1) (toMidiNote n2)
 
 data NoteDescription = NoteDescription Octave PitchClassDescription
 
@@ -40,6 +25,9 @@ instance showNote :: Show Note where
 
 instance pitchNote :: Pitch Note where
   toHz = toHz <<< toMidiNote
+
+instance ordNote :: Ord Note where
+  compare note1 note2 = (toMidiNote note1) `compare` (toMidiNote note2)
 
 makeNoteDesc :: Octave -> NoteLetter -> Accidental -> NoteDescription
 makeNoteDesc oct noteLetter accidental = NoteDescription oct (PitchClassDescription noteLetter accidental)

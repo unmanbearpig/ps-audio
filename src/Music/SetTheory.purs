@@ -5,6 +5,7 @@ import Data.Newtype (class Newtype, wrap, unwrap)
 -- import Data.Group
 import Data.Monoid (class Monoid)
 import Data.Set
+import Music.Intervals
 
 newtype IntervalClass = IntervalClass Int
 
@@ -57,3 +58,6 @@ class ToIntervalClass a where
 
 transposePitchClass :: PitchClass -> IntervalClass -> PitchClass
 transposePitchClass pc ic = wrap $ (unwrap pc) + (unwrap ic)
+
+instance toIntervalIntervalClass :: ToInterval IntervalClass where
+  toInterval (IntervalClass n) = Interval n
