@@ -83,7 +83,6 @@ component =
         (map (\cqName -> HH.option [ ] [ HH.text cqName ]) chordQualityNames)
       , HH.select [ HE.onValueChange (HE.input ChangeChordInversion) ]
         (map (\inv -> HH.option [ ] [ HH.text (show inv) ]) $ Array.fromFoldable $ possibleChordInversions $ makeChord state)
-      , HH.input [ HE.onValueChange (HE.input ChangeChordInversion) ]
       , HH.button
           [ HE.onClick (HE.input_ Play) ]
           [ HH.text  "Play"
