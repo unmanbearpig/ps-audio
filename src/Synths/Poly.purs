@@ -10,14 +10,16 @@ import Audio.WebAudio.AudioParam as AuParam
 import Control.Monad.Eff (Eff)
 import Data.Traversable (traverse, traverse_)
 import Data.Newtype (class Newtype)
+import Data.List
 
-newtype PolySynth = PolySynth { notes :: (Array Note)
-                              , oscs :: (Array OscillatorNode)
+
+newtype PolySynth = PolySynth { notes :: (List Note)
+                              , oscs :: (List OscillatorNode)
                               , gainNode :: GainNode }
 
 derive instance newtypePolySynth :: Newtype PolySynth _
 
-polySynth :: ∀ eff. AudioContext -> (Array Note) -> GainValue -> (Eff ( wau :: WebAudio | eff ) PolySynth)
+polySynth :: ∀ eff. AudioContext -> (List Note) -> GainValue -> (Eff ( wau :: WebAudio | eff ) PolySynth)
 polySynth ctx notes gainValue = do
   oscs <- traverse (noteOsc ctx) notes
   g <- createGain ctx gainValue

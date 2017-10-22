@@ -6,8 +6,9 @@ import Music.Notes
 import Music.Pitch
 import Music.SetTheory
 import Data.Maybe (Maybe(..))
-import Data.Array ((:))
+-- import Data.Array ((:))
 import Data.Set as Set
+import Data.List
 
 data Chord = Chord Octave PitchClass (Set.Set IntervalClass)
 
@@ -74,8 +75,7 @@ makeTriad cq nl accidental oct = makeTriad' cq (PitchClassDescription nl acciden
 
 data ChordInversion = RootPosition | Inversion Int
 
-chordNotes :: Chord -> (Array Note)
-chordNotes  (Chord octave pc intervalClasses) =
+chordNotes :: ChordInversion -> Chord -> (List Note)
+chordNotes _inv (Chord octave pc intervalClasses) =
   (Note octave pc) : (map (\i -> transposeNote rootNote (toInterval i)) (Set.toUnfoldable intervalClasses))
   where rootNote = Note octave pc
--- chordNotes :: ChordInversion -> Chord -> (Array Note)

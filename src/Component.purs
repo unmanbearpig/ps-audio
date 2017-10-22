@@ -19,6 +19,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Data.Newtype (unwrap)
+import Data.List
+import Data.Array as Array
 
 data Query a = Play a | ChangeChordQuality String a | ChangePitchClass String a
 
@@ -26,6 +28,7 @@ type State = { ctx :: Maybe AudioContext
              , dest :: Maybe DynamicsCompressorNode
              , chordQuality :: ChordQuality
              , chordPitchClass :: PitchClassDescription
+             , chordInversion :: ChordInversion
              , octave :: Octave}
 
 makeChord :: State -> Chord
@@ -41,8 +44,8 @@ renderNote note = HH.div [ ] [ HH.text ("note: " <> (show (pitchClassDescription
     midiNote = toMidiNote note
 
 renderChordPitches :: Chord -> Array (H.ComponentHTML Query)
-renderChordPitches chord = map (\p -> HH.div [ ] [ HH.text (show p) ]) pitches
-  where pitches = map toHz $ chordNotes chord
+renderChordPitches chord = Array.fromFoldable $ map (\p -> HH.div [ ] [ HH.text (show p) ]) pitches
+  where pitches = map toHz $ chordNotes RootPosition chord
 
 component :: forall eff. H.Component HH.HTML Query Unit Void (Aff ( wau :: WebAudio, console :: CONSOLE | eff ))
 component =
@@ -59,6 +62,7 @@ component =
                  , dest: Nothing
                  , chordQuality: Major
                  , chordPitchClass: (PitchClassDescription C Natural)
+                 , chordInversion: RootPosition
                  , octave: (Octave 4) }
 
   render :: State -> H.ComponentHTML Query
@@ -77,7 +81,7 @@ component =
           [ HH.text  "Play"
           ]
       , HH.p [ ] [ HH.text $ "Octave " <> show state.octave ]
-      , HH.p [ ] (map renderNote (chordNotes chord))
+      , HH.p [ ] (Array.fromFoldable $ map renderNote (chordNotes RootPosition chord))
       , HH.p [ ] ( [ HH.text ("pitches:") ] <> renderChordPitches chord )
       ]
     where chord = makeChord state

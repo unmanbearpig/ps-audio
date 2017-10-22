@@ -11,7 +11,7 @@ import Audio.WebAudio.AudioContext as AuCtx
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Data.Newtype (unwrap)
-import Music.Chords (Chord, chordNotes)
+import Music.Chords (Chord, chordNotes, ChordInversion(..))
 import Synths.Poly (polySynth)
 import Synths.Utils
 
@@ -23,7 +23,7 @@ playSequence ctx dest duration chords = do
   where
     scheduleChordSynth :: Chord -> Int -> GainNode -> (Eff ( wau :: WebAudio, console :: CONSOLE | eff ) Unit)
     scheduleChordSynth chord idx g = do
-      synth <- polySynth ctx (chordNotes chord) 0.0
+      synth <- polySynth ctx (chordNotes RootPosition chord) 0.0
       synthGain <- gain ((unwrap synth).gainNode)
       synth `plugInto` g
 
