@@ -103,12 +103,23 @@ chordNotes :: ChordInversion -> Chord -> (Set.Set Note)
 chordNotes inversion (Chord octave pc intervalClasses) =
   (Set.singleton $ root) <> (Set.map (\i -> transposeNote root i) intervals)
   where root = Note octave pc
+        rootPositionIntervals :: Set.Set Interval
+        rootPositionIntervals = Set.map toInterval intervalClasses
+        rootPosIntervalArray :: Array Interval
+        rootPosIntervalArray = Array.sort $ Set.toUnfoldable rootPositionIntervals
         intervals :: Set.Set Interval
         intervals =
           case inversion of
             RootPosition -> Set.map toInterval intervalClasses
-            Inversion 1 -> Set.map (toInterval >>> (_ <> iinverse $ toInterval (Octave 1))) intervalClasses
-            Inversion _ -> Set.map toInterval intervalClasses
+            Inversion i ->
+              let intervalsToKeep = i - 1  in
+              Set.fromFoldable $ (Array.take intervalsToKeep rootPosIntervalArray) <> (map invertInterval (Array.drop intervalsToKeep rootPosIntervalArray))
+            -- Inversion 1 -> Set.map invertInterval rootPositionIntervals
+            -- Inversion _ -> Set.map toInterval intervalClasses
+
+        invertInterval :: Interval -> Interval
+        invertInterval = append $ iinverse $ toInterval $ Octave 1
+
 
 numberOfChordNotes :: Chord -> Int
 numberOfChordNotes (Chord _ _ intervalClasses) = 1 + Set.size intervalClasses

@@ -76,6 +76,13 @@ main = runTest do
         <> (Set.singleton $ Note (Octave 4) (pitchClass' G Sharp))
         <> mempty) (chordNotes (Inversion 1) (makeTriad Major G Sharp (Octave 4)))
 
+      Assert.equal
+        ( (Set.singleton (Note (Octave 4) (pitchClass' D Sharp)))
+        <> (Set.singleton (Note (Octave 5) (pitchClass' C Natural)))
+        <> (Set.singleton (Note (Octave 4) (pitchClass' G Sharp)))
+        <> mempty) (chordNotes (Inversion 2) (makeTriad Major G Sharp (Octave 4)))
+
+
     test "parse chord inversion" do
       Assert.equal (Just RootPosition) (parseChordInversion "Root position")
       Assert.equal (Just $ Inversion 1) (parseChordInversion "Chord inversion 1")
