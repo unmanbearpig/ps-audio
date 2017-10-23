@@ -5,6 +5,8 @@ import Data.Newtype (class Newtype, wrap, unwrap)
 -- import Data.Group
 import Data.Monoid (class Monoid)
 import Data.Set
+import Data.Group
+import Data.Semigroup.Commutative (class Commutative)
 import Music.Intervals
 
 newtype IntervalClass = IntervalClass Int
@@ -28,6 +30,9 @@ instance boundedIntervalClass :: Bounded IntervalClass where
 
 instance monoidIntervalClass :: Monoid IntervalClass where
   mempty = intervalClass 0
+
+instance groupIntervalClass :: Group IntervalClass where
+  ginverse (IntervalClass i) = intervalClass $ 12 - i
 
 instance showIntervalClass :: Show IntervalClass where
   show (IntervalClass ic) = "(IntervalClass " <> show ic <> ")"

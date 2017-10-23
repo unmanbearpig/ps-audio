@@ -1,18 +1,14 @@
 module Test.Main where
 
 import Prelude
-
-import Control.Monad.Eff (Eff)
-
 import Data.Newtype (unwrap)
-import Test.Unit (suite, test, timeout)
+import Test.Unit (suite, test)
 import Test.Unit.Main (runTest)
 import Test.Unit.Assert as Assert
 import Test.Unit.QuickCheck (quickCheck)
 import Data.Monoid (mempty)
-import Data.List
 import Data.Set as Set
-import Data.Maybe
+import Data.Maybe (Maybe(..))
 
 import Music.MidiNote
 import Music.Pitch
@@ -20,6 +16,8 @@ import Music.LetterNotation
 import Music.Notes
 import Music.Chords
 import Music.Intervals
+import Music.SetTheory
+import Data.Group (ginverse)
 
 main = runTest do
   suite "music" do
@@ -86,6 +84,12 @@ main = runTest do
     test "parse chord inversion" do
       Assert.equal (Just RootPosition) (parseChordInversion "Root position")
       Assert.equal (Just $ Inversion 1) (parseChordInversion "Chord inversion 1")
+
+    test "interval class ginverse" do
+      quickCheck \n -> (intervalClass n) <> (ginverse $ intervalClass n) == mempty
+
+    test "interval ginverse" do
+      quickCheck \n -> (Interval n) <> (ginverse $ Interval n) == mempty
 
     -- test "showNote" do
     --   Assert.equal "C♭" (show $ Note C Flat)
