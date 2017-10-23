@@ -43,7 +43,6 @@ instance newtypePitchClass :: Newtype PitchClass Int where
 
 derive instance eqPitchClass :: Eq PitchClass
 derive instance ordPitchClass :: Ord PitchClass
-derive newtype instance semigroupPitchClass :: Semigroup PitchClass
 derive newtype instance boundedPitchClass :: Bounded PitchClass
 derive newtype instance monoidPitchClass :: Monoid PitchClass
 
