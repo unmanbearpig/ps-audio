@@ -2,6 +2,9 @@ module Music.Intervals where
 
 import Prelude
 import Data.Newtype (class Newtype)
+import Data.Group
+import Data.Monoid
+import Data.Semigroup.Commutative (class Commutative)
 
 newtype Interval = Interval Int
 
@@ -17,8 +20,14 @@ instance semigroupInterval :: Semigroup Interval where
 instance showInterval :: Show Interval where
   show (Interval n) = show n <> " semitones"
 
-iinverse :: Interval -> Interval
-iinverse (Interval i) = (Interval (-i))
+instance monoidInterval :: Monoid Interval where
+  mempty = (Interval 0)
+
+instance groupInterval :: Group Interval where
+  ginverse :: Interval -> Interval
+  ginverse (Interval i) = (Interval (-i))
+
+instance commutativeInterval :: Commutative Interval
 
 newtype Octave = Octave Int
 

@@ -15,6 +15,7 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.Either
 import Data.Array as Array
+import Data.Group
 
 data Chord = Chord Octave PitchClass (Set.Set IntervalClass)
 
@@ -118,7 +119,7 @@ chordNotes inversion (Chord octave pc intervalClasses) =
             -- Inversion _ -> Set.map toInterval intervalClasses
 
         invertInterval :: Interval -> Interval
-        invertInterval = append $ iinverse $ toInterval $ Octave 1
+        invertInterval = append $ ginverse $ toInterval $ Octave 1
 
 
 numberOfChordNotes :: Chord -> Int
