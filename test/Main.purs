@@ -16,8 +16,10 @@ import Music.LetterNotation
 import Music.Notes
 import Music.Chords
 import Music.Intervals
-import Music.SetTheory
+import Music.PitchClass
+import Music.IntervalClass
 import Data.Group (ginverse)
+import Data.Cyclic
 
 main = runTest do
   suite "music" do
@@ -80,7 +82,6 @@ main = runTest do
         <> (Set.singleton (Note (Octave 4) (pitchClass' G Sharp)))
         <> mempty) (chordNotes (Inversion 2) (makeTriad Major G Sharp (Octave 4)))
 
-
     test "parse chord inversion" do
       Assert.equal (Just RootPosition) (parseChordInversion "Root position")
       Assert.equal (Just $ Inversion 1) (parseChordInversion "Chord inversion 1")
@@ -90,6 +91,30 @@ main = runTest do
 
     test "interval ginverse" do
       quickCheck \n -> (Interval n) <> (ginverse $ Interval n) == mempty
+
+    test "rotateRight" do
+      Assert.equal [3, 1, 2] (rotateRight 1 [1, 2, 3])
+      Assert.equal [2, 3, 1] (rotateRight 2 [1, 2, 3])
+      Assert.equal [1, 2, 3] (rotateRight 3 [1, 2, 3])
+      Assert.equal [3, 1, 2] (rotateRight 4 [1, 2, 3])
+
+    test "rotateLeft" do
+      Assert.equal [2, 3, 1] (rotateLeft 1 [1, 2, 3])
+      Assert.equal [3, 1, 2] (rotateLeft 2 [1, 2, 3])
+      Assert.equal [1, 2, 3] (rotateLeft 3 [1, 2, 3])
+      Assert.equal [2, 3, 1] (rotateLeft 4 [1, 2, 3])
+
+    test "rotations" do
+      quickCheck \n -> let a = [1, 2, 3] in (rotateRight n (rotateLeft n a)) == a
+
+    test "cyclic" do
+      Assert.equal (Cyclic [1, 2, 3]) (Cyclic [2, 3, 1])
+      Assert.equal (Cyclic [1, 2, 3]) (Cyclic [3, 1, 2])
+
+      quickCheck \n -> let a = [1, 2, 3] in Cyclic (rotateLeft n a) == Cyclic a
+
+    -- test "diff interval classes" do
+    --   Assert.equal (IntervalClass 3) (diffPitchClasses (PitchClass))
 
     -- test "showNote" do
     --   Assert.equal "C♭" (show $ Note C Flat)

@@ -1,13 +1,10 @@
-module Music.SetTheory where
+module Music.IntervalClass where
 
 import Prelude
-import Data.Newtype (class Newtype, wrap, unwrap)
--- import Data.Group
+import Data.Newtype (class Newtype)
 import Data.Monoid (class Monoid)
-import Data.Set
-import Data.Group
-import Data.Semigroup.Commutative (class Commutative)
-import Music.Intervals
+import Data.Group (class Group)
+import Music.Intervals (class ToInterval, Interval(..))
 
 newtype IntervalClass = IntervalClass Int
 
@@ -37,30 +34,11 @@ instance groupIntervalClass :: Group IntervalClass where
 instance showIntervalClass :: Show IntervalClass where
   show (IntervalClass ic) = "(IntervalClass " <> show ic <> ")"
 
-newtype PitchClass = PitchClass IntervalClass
-
-pitchClass :: Int -> PitchClass
-pitchClass = PitchClass <<< intervalClass
-
-instance newtypePitchClass :: Newtype PitchClass Int where
-  wrap ic = PitchClass (wrap ic)
-  unwrap (PitchClass i) = unwrap i
-
-derive instance eqPitchClass :: Eq PitchClass
-derive instance ordPitchClass :: Ord PitchClass
-derive newtype instance boundedPitchClass :: Bounded PitchClass
-
-instance showPitchClass :: Show PitchClass where
-  show (PitchClass ic) = "(PitchClass " <> show ic <> ")"
-
-class ToPitchClass a where
-  toPitchClass :: a -> PitchClass
-
-class ToIntervalClass a where
-  toIntervalClass :: a -> IntervalClass
-
-transposePitchClass :: PitchClass -> IntervalClass -> PitchClass
-transposePitchClass pc ic = wrap $ (unwrap pc) + (unwrap ic)
-
 instance toIntervalIntervalClass :: ToInterval IntervalClass where
   toInterval (IntervalClass n) = Interval n
+
+semitone :: IntervalClass
+semitone = intervalClass 1
+
+wholeTone :: IntervalClass
+wholeTone = intervalClass 2

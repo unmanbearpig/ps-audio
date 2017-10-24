@@ -1,6 +1,7 @@
 module Music.LetterNotation where
 
-import Music.SetTheory
+import Music.PitchClass
+import Music.IntervalClass
 import Prelude
 import Data.Enum (class Enum)
 import Data.Maybe (Maybe(..))

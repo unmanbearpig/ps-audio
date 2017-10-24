@@ -4,7 +4,8 @@ import Prelude
 import Music.LetterNotation
 import Music.Notes
 import Music.Pitch
-import Music.SetTheory
+import Music.PitchClass
+import Music.IntervalClass
 import Music.Intervals
 import Data.Maybe (Maybe(..))
 -- import Data.Array ((:))

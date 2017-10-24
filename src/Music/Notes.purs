@@ -5,7 +5,7 @@ import Data.Newtype (unwrap)
 import Music.LetterNotation
 import Music.MidiNote
 import Music.Pitch
-import Music.SetTheory
+import Music.PitchClass
 import Music.Intervals
 
 diffNotes :: Note -> Note -> Interval
